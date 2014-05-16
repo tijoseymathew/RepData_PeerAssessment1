@@ -224,22 +224,43 @@ It can be observed that imputing the data set has transformed the histogram to a
 Finally a line plot showcasing the difference of average activity level during the weekdays and weekends is shown below for comparison.
 
 ```r
-# Identify the weedays & weekends
+#Identify the weedays & weekends
 activityImputData$day <- weekdays(activityImputData$date)
 activityImputData$day[activityImputData$day %in% c("Saturday", "Sunday")] <- "Weekend"
 activityImputData$day[!(activityImputData$day %in% c("Weekend"))] <- "Weekday"
 
-# Split data by the type of day and find the mean number of steps for both
-# the categories
-step_by_day <- split(activityImputData, activityImputData$day)
-mean_step_weekday <- sapply(split(step_by_day[["Weekday"]], step_by_day[["Weekday"]]$interval), 
-    function(x) mean(x$steps))
-mean_step_weekend <- sapply(split(step_by_day[["Weekend"]], step_by_day[["Weekend"]]$interval), 
-    function(x) mean(x$steps))
-# Plot the activity level for weekday and weekends
-par(mfrow = c(2, 1))
-plot(mean_step_weekend, type = "l", main = "weekend", xlab = "Interval", ylab = "Number of steps")
-plot(mean_step_weekday, type = "l", main = "weekday", xlab = "Interval", ylab = "Number of steps")
+#Split data by the type of day and find the mean number of steps for both the categories
+require(reshape2)
+```
+
+```
+## Loading required package: reshape2
+```
+
+```r
+stepByDay <- split(activityImputData, activityImputData$day)
+meanStepByDay <- sapply(stepByDay, #Apply on each type of day
+                        function(x) sapply(split(x, x$interval), #Split into intervals for each day
+                                           function(y) 
+                                             mean(y$steps) #Calculate the mean for each interval
+                                           )
+                        )
+meanStepByDay <- melt(meanStepByDay, 
+                      varnames=c("Interval", "day"), 
+                      value.name="steps")
+require(lattice)
+```
+
+```
+## Loading required package: lattice
+```
+
+```r
+xyplot(steps~Interval|day, 
+       meanStepByDay,
+       type="l",
+       ylab="Number of steps",
+       layout=c(1,2))
 ```
 
 ![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 

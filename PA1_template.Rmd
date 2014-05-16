@@ -87,21 +87,21 @@ activityImputData$day[activityImputData$day %in% c("Saturday", "Sunday")] <- "We
 activityImputData$day[!(activityImputData$day %in% c("Weekend"))] <- "Weekday"
 
 #Split data by the type of day and find the mean number of steps for both the categories
-step_by_day <- split(activityImputData, activityImputData$day)
-mean_step_weekday <- sapply( split(step_by_day[["Weekday"]], step_by_day[["Weekday"]]$interval),
-                             function(x) mean(x$steps) )
-mean_step_weekend <- sapply( split(step_by_day[["Weekend"]], step_by_day[["Weekend"]]$interval),
-                             function(x) mean(x$steps) )
-#Plot the activity level for weekday and weekends
-par(mfrow=c(2,1))
-plot(mean_step_weekend,
-     type="l",
-     main="weekend",
-     xlab="Interval",
-     ylab="Number of steps")
-plot(mean_step_weekday,
-     type="l",
-     main="weekday",
-     xlab="Interval",
-     ylab="Number of steps")
+require(reshape2)
+stepByDay <- split(activityImputData, activityImputData$day)
+meanStepByDay <- sapply(stepByDay, #Apply on each type of day
+                        function(x) sapply(split(x, x$interval), #Split into intervals for each day
+                                           function(y) 
+                                             mean(y$steps) #Calculate the mean for each interval
+                                           )
+                        )
+meanStepByDay <- melt(meanStepByDay, 
+                      varnames=c("Interval", "day"), 
+                      value.name="steps")
+require(lattice)
+xyplot(steps~Interval|day, 
+       meanStepByDay,
+       type="l",
+       ylab="Number of steps",
+       layout=c(1,2))
 ```
