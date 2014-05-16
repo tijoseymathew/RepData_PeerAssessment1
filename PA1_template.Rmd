@@ -64,3 +64,26 @@ data.frame(meanSteps=meanStepDay, medianSteps=medianStepDay)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+activityImputData$day <- weekdays(activityImputData$date)
+activityImputData$day[activityImputData$day %in% c("Saturday", "Sunday")] <- "Weekend"
+activityImputData$day[!(activityImputData$day %in% c("Weekend"))] <- "Weekday"
+
+step_by_day <- split(activityImputData, activityImputData$day)
+mean_step_weekday <- sapply( split(step_by_day[["Weekday"]], step_by_day[["Weekday"]]$interval),
+                             function(x) mean(x$steps) )
+mean_step_weekend <- sapply( split(step_by_day[["Weekend"]], step_by_day[["Weekend"]]$interval),
+                             function(x) mean(x$steps) )
+par(mfrow=c(2,1))
+plot(mean_step_weekend,
+     type="l",
+     main="weekend",
+     xlab="Interval",
+     ylab="Number of steps")
+plot(mean_step_weekday,
+     type="l",
+     main="weekday",
+     xlab="Interval",
+     ylab="Number of steps")
+
+```
