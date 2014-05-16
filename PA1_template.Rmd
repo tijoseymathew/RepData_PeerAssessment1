@@ -2,18 +2,64 @@
 
 
 ## Loading and preprocessing the data
+```{r}
+unzip("activity.zip")
+activityData <- read.csv("activity.csv")
+activityData$date <- as.Date(activityData$date, format="%Y-%m-%d")
+
+```
 
 
 
 ## What is mean total number of steps taken per day?
-
+```{r}
+totalStepDay <- sapply( split(activityData, activityData$date), 
+                        function(x) sum(x$steps, na.rm=TRUE)
+                      )
+hist(totalStepDay)
+meanStepDay <- sapply( split(activityData, activityData$date), 
+                        function(x) mean(x$steps, na.rm=TRUE)
+                      )
+medianStepDay <- sapply( split(activityData, activityData$date), 
+                        function(x) median(x$steps, na.rm=TRUE)
+                        )
+data.frame(meanSteps=meanStepDay, medianSteps=medianStepDay)
+```
 
 
 ## What is the average daily activity pattern?
-
+```{r}
+meanStepInterval <- sapply( split(activityData, activityData$interval),
+                            function(x) mean(x$steps, na.rm=T)
+                            )
+maxMeanStep <- max(meanStepInterval)
+maxInterval <- names(meanStepInterval)[which(meanStepInterval==maxMeanStep)]
+plot(meanStepInterval, type="l")
+```
+The maximum mean step of `r maxMeanStep` was observed in interval `r maxInterval`.
 
 
 ## Imputing missing values
+A total of `r sum(!complete.cases(activityData))` out of `r nrow(activityData)` rows are incomplete.
+```{r}
+activityImputData <- activityData
+repMeanStep <- rep(meanStepInterval, length(unique(activityData$date)))
+activityImputData$steps[is.na(activityImputData$steps)] <- as.integer(repMeanStep[is.na(activityImputData$steps)])
+```
+```{r}
+totalStepDay <- sapply( split(activityImputData, activityImputData$date), 
+                        function(x) sum(x$steps, na.rm=TRUE)
+                      )
+hist(totalStepDay)
+meanStepDay <- sapply( split(activityImputData, activityImputData$date), 
+                        function(x) mean(x$steps, na.rm=TRUE)
+                      )
+medianStepDay <- sapply( split(activityImputData, activityImputData$date), 
+                        function(x) median(x$steps, na.rm=TRUE)
+                        )
+data.frame(meanSteps=meanStepDay, medianSteps=medianStepDay)
+```
+
 
 
 
