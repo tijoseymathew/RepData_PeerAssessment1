@@ -14,7 +14,7 @@ activityData$date <- as.Date(activityData$date, format="%Y-%m-%d")
 
 
 ## What is mean total number of steps taken per day?
-This section finds the distribution of the number of steps taken each day that the individual was observed. The distribution is shown as a histogram and the mean and median number of steps for each day is tabulated below. Any missing value in the data set is ignored.
+This section finds the distribution of the number of steps taken each day that the individual was observed. The distribution is shown as a histogram. Any missing value in the data set is ignored.
 ```{r}
 totalStepDay <- sapply( split(activityData, activityData$date), 
                         function(x) sum(x$steps, na.rm=TRUE)
@@ -22,15 +22,10 @@ totalStepDay <- sapply( split(activityData, activityData$date),
 hist(totalStepDay,
      main="Histogram of total number of steps taken each day",
      xlab="Steps taken each day")
-meanStepDay <- sapply( split(activityData, activityData$date), 
-                        function(x) mean(x$steps, na.rm=TRUE)
-                      )
-medianStepDay <- sapply( split(activityData, activityData$date), 
-                        function(x) median(x$steps, na.rm=TRUE)
-                        )
-data.frame(meanSteps=meanStepDay, medianSteps=medianStepDay)
+meanStepDay <- mean(totalStepDay, na.rm=T)
+medianStepDay <- median(totalStepDay, na.rm=T)
 ```
-
+The mean number of steps taken each day is `r meanStepDay` while the median is `r medianStepDay`.
 
 ## What is the average daily activity pattern?
 This section shows the average number of steps taken for each interval for all the days in the data set as a line plot.
@@ -66,14 +61,10 @@ totalStepDay <- sapply( split(activityImputData, activityImputData$date),
 hist(totalStepDay,
      main="Histogram of total number of steps taken each day",
      xlab="Steps taken each day")
-meanStepDay <- sapply( split(activityImputData, activityImputData$date), 
-                        function(x) mean(x$steps, na.rm=TRUE)
-                      )
-medianStepDay <- sapply( split(activityImputData, activityImputData$date), 
-                        function(x) median(x$steps, na.rm=TRUE)
-                        )
-data.frame(meanSteps=meanStepDay, medianSteps=medianStepDay)
+meanStepDay <- mean(totalStepDay, na.rm=T)
+medianStepDay <- median(totalStepDay, na.rm=T)
 ```
+The mean number of steps taken each day for the imputed data set is `r sprintf("%.2f", meanStepDay)` while the median is `r medianStepDay`.
 It can be observed that imputing the data set has transformed the histogram to a more normal format as expected since the missing values were replaced by the mean value.
 
 
