@@ -1,7 +1,10 @@
 # Reproducible Research: Peer Assessment 1
+Wearable technology is gaining major ground in the technological world with a huge variety of devices being introduced into the market. These devices generally measure the environment of the human user using a variety of sensors. The data collected from such sensors are often under utilized due to its huge volume and lack of statistical techniques to process and interpret the data in useful ways.
 
+This report presents a preliminary analysis on the number of steps taken by an annoymous individual during the months of October and November, 2012 and includes the number of steps taken by the individual in 5 minute interval.
 
 ## Loading and preprocessing the data
+This section loads the data and converts the date column into a standard POSIX format for easier handling later on.
 
 ```r
 unzip("activity.zip")
@@ -13,11 +16,13 @@ activityData$date <- as.Date(activityData$date, format = "%Y-%m-%d")
 
 
 ## What is mean total number of steps taken per day?
+This section finds the distribution of the number of steps taken each day that the individual was observed. The distribution is shown as a histogram and the mean and median number of steps for each day is tabulated below. Any missing value in the data set is ignored.
 
 ```r
 totalStepDay <- sapply(split(activityData, activityData$date), function(x) sum(x$steps, 
     na.rm = TRUE))
-hist(totalStepDay)
+hist(totalStepDay, main = "Histogram of total number of steps taken each day", 
+    xlab = "Steps taken each day")
 ```
 
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
@@ -98,13 +103,15 @@ data.frame(meanSteps = meanStepDay, medianSteps = medianStepDay)
 
 
 ## What is the average daily activity pattern?
+This section shows the average number of steps taken for each interval for all the days in the data set as a line plot.
 
 ```r
 meanStepInterval <- sapply(split(activityData, activityData$interval), function(x) mean(x$steps, 
     na.rm = T))
 maxMeanStep <- max(meanStepInterval)
 maxInterval <- names(meanStepInterval)[which(meanStepInterval == maxMeanStep)]
-plot(meanStepInterval, type = "l")
+plot(names(meanStepInterval), meanStepInterval, type = "l", main = "Average number of steps taken each interval", 
+    xlab = "Interval", ylab = "Steps")
 ```
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
@@ -113,19 +120,25 @@ The maximum mean step of 206.1698 was observed in interval 835.
 
 
 ## Imputing missing values
-A total of 2304 out of 17568 rows are incomplete.
+A total of 2304 out of 17568 rows in the original data set is incomplete. Hence to account for any bias introduced a data imputing algorithm is proposed that replaces all missing values by the average number of steps taken during that interval over all days.
 
 ```r
-activityImputData <- activityData
+activityImputData <- activityData  #The imputed data is stored in new data frame
+# The mean number of steps taken over each interval is repeated to equal the
+# number of days
 repMeanStep <- rep(meanStepInterval, length(unique(activityData$date)))
+# Missing steps are replaced by mean value of steps for that particular
+# interval
 activityImputData$steps[is.na(activityImputData$steps)] <- as.integer(repMeanStep[is.na(activityImputData$steps)])
 ```
 
+The histogram and per day mean and median number of steps are calculated as before for the imputed data.
 
 ```r
 totalStepDay <- sapply(split(activityImputData, activityImputData$date), function(x) sum(x$steps, 
     na.rm = TRUE))
-hist(totalStepDay)
+hist(totalStepDay, main = "Histogram of total number of steps taken each day", 
+    xlab = "Steps taken each day")
 ```
 
 ![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
@@ -203,22 +216,27 @@ data.frame(meanSteps = meanStepDay, medianSteps = medianStepDay)
 ## 2012-11-30   36.9479        33.5
 ```
 
-
+It can be observed that imputing the data set has transformed the histogram to a more normal format as expected since the missing values were replaced by the mean value.
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+Finally a line plot showcasing the difference of average activity level during the weekdays and weekends is shown below for comparison.
 
 ```r
+# Identify the weedays & weekends
 activityImputData$day <- weekdays(activityImputData$date)
 activityImputData$day[activityImputData$day %in% c("Saturday", "Sunday")] <- "Weekend"
 activityImputData$day[!(activityImputData$day %in% c("Weekend"))] <- "Weekday"
 
+# Split data by the type of day and find the mean number of steps for both
+# the categories
 step_by_day <- split(activityImputData, activityImputData$day)
 mean_step_weekday <- sapply(split(step_by_day[["Weekday"]], step_by_day[["Weekday"]]$interval), 
     function(x) mean(x$steps))
 mean_step_weekend <- sapply(split(step_by_day[["Weekend"]], step_by_day[["Weekend"]]$interval), 
     function(x) mean(x$steps))
+# Plot the activity level for weekday and weekends
 par(mfrow = c(2, 1))
 plot(mean_step_weekend, type = "l", main = "weekend", xlab = "Interval", ylab = "Number of steps")
 plot(mean_step_weekday, type = "l", main = "weekday", xlab = "Interval", ylab = "Number of steps")
